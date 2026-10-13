@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerobot_robot_so_arm102"
+version = "0.1.0a1"
+description = "SO-ARM 102 follower integration for LeRobot"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = ["lerobot>=0.6.2,<0.7"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.12"]
+
+[project.optional-dependencies]
+feetech = ["feetech-servo-sdk>=1,<2", "pyserial>=3.5", "deepdiff>=7,<9"]
+rustypot = ["rustypot>=1.11,<1.12"]
+dev = ["pytest>=8,<10", "ruff==0.14.1", "build>=1.2", "twine>=6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
