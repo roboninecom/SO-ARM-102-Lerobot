@@ -3,6 +3,7 @@ from importlib import import_module
 from typing import Protocol
 
 from lerobot.motors import Motor, MotorCalibration, MotorNormMode
+from lerobot.motors.motors_bus import SerialMotorsBus
 
 from .config_so_arm102 import SOArm102FollowerConfig
 
@@ -54,5 +55,9 @@ def make_controller(config: SOArm102FollowerConfig) -> MotorController:
     """Load only the selected driver; optional SDKs are not needed for discovery."""
     if config.controller not in ("feetech", "rustypot"):
         raise ValueError(f"Unknown controller {config.controller!r}; choose 'feetech' or 'rustypot'.")
+    # The old module is only a deprecated alias after the Rustypot migration.
+    if config.controller == "feetech":
+        if hasattr(SerialMotorsBus, "_find_model"):
+            raise RuntimeError("This LeRobot uses Rustypot; select controller='rustypot'.")
     module = import_module(f".backends.{config.controller}", __package__)
     return module.make_controller(config)

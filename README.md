@@ -7,14 +7,14 @@ The initial implementation uses the legacy Feetech backend with local STS3235
 support. Rustypot compatibility is experimental. The future extended firmware
 protocol is not implemented; it will use the same joint-level controller interface.
 
-| ID | Joint | Model |
-| --- | --- | --- |
-| 1 | shoulder_pan | STS3235 |
-| 2 | shoulder_lift | STS3250 |
-| 3 | elbow_flex | STS3250 |
-| 4 | wrist_flex | STS3235 |
-| 5 | wrist_roll | STS3215 |
-| 6 | gripper | STS3215 |
+| ID  | Joint         | Model   |
+| --- | ------------- | ------- |
+| 1   | shoulder_pan  | STS3235 |
+| 2   | shoulder_lift | STS3250 |
+| 3   | elbow_flex    | STS3250 |
+| 4   | wrist_flex    | STS3235 |
+| 5   | wrist_roll    | STS3215 |
+| 6   | gripper       | STS3215 |
 
 Motor identification stays strict, including STS3235 model number 2057. Firmware
 versions must match across the bus. Follower gripper calibration uses
@@ -73,6 +73,35 @@ positions use degrees or -100..100 according to `use_degrees`; the gripper uses
 
 Add extended firmware support when its wire specification and calibration
 semantics are defined. No extended commands or automatic detection are assumed.
+
+## Experimental Rustypot support
+
+The tested combination is LeRobot PR #4672 at
+`8d3511625da34da5acceb8f67333578fa2fddab8` with Rustypot 1.11.0. The adapter uses
+the PR's private model lookup method; compatibility with later revisions must be
+retested. Installing Rustypot alone does not convert a legacy LeRobot checkout.
+Use a separate environment so the experimental install does not replace the
+legacy development environment:
+
+```bash
+uv venv --python 3.12 .venv-rustypot
+uv pip install --python .venv-rustypot/bin/python \
+  'lerobot[feetech] @ git+https://github.com/huggingface/lerobot.git@8d3511625da34da5acceb8f67333578fa2fddab8' \
+  'rustypot==1.11.0' -e './packages/lerobot_robot_so_arm102[rustypot,dev]'
+uv run --no-project --python .venv-rustypot/bin/python \
+  pytest -c packages/lerobot_robot_so_arm102/pyproject.toml packages/lerobot_robot_so_arm102/tests
+```
+
+Use that environment's `lerobot-calibrate` or `lerobot-teleoperate` executable
+with `--robot.controller=rustypot`. The same robot type and joint mapping apply.
+The adapter supplies model number 2057 with the shared STS definition only when
+Rustypot does not already know STS3235. It does not alter Rustypot's global registry.
+
+The tests select the installed LeRobot API and skip the other backend's tests.
+They exercise actual SDK framing for Feetech and actual Rustypot definitions with
+an injected transport for Rustypot; no real hardware is contacted. Both environments
+must pass before claiming compatibility. Extended firmware will need its own
+transport tests and hardware verification once specified.
 
 ## Publishing later
 

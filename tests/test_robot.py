@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import pytest
+from lerobot.motors.motors_bus import SerialMotorsBus
 from lerobot.robots.config import RobotConfig
 from lerobot.utils.import_utils import make_device_from_device_class, register_third_party_plugins
 
@@ -20,7 +21,8 @@ def test_discovery(tmp_path):
     register_third_party_plugins()
     config_class = RobotConfig.get_choice_class("so_arm102_follower")
     assert config_class is SOArm102FollowerConfig
-    config = config_class(port="unused", calibration_dir=tmp_path)
+    backend = "rustypot" if hasattr(SerialMotorsBus, "_find_model") else "feetech"
+    config = config_class(port="unused", calibration_dir=tmp_path, controller=backend)
     # The installed plugin is discovered and constructed through LeRobot, without hardware IO.
     robot = make_device_from_device_class(config)
     assert isinstance(robot, SOArm102Follower)
@@ -46,6 +48,24 @@ def test_connect_failure_closes_controller(robot, controller, calibration):
         robot.connect()
     assert not controller.is_connected
     assert "enable" not in controller.events
+
+
+def test_first_connection_with_camera_can_calibrate(robot):
+    class Camera:
+        is_connected = False
+
+        def connect(self):
+            self.is_connected = True
+
+        def disconnect(self):
+            self.is_connected = False
+
+    camera = Camera()
+    robot.cameras["test"] = camera
+    robot.connect()
+    assert robot.is_calibrated
+    robot.disconnect()
+    assert not camera.is_connected
 
 
 def test_calibration_persists_follower_direction_and_schema(robot, controller, tmp_path):
@@ -79,3 +99,9 @@ def test_action_clipping(robot, controller):
 def test_unknown_controller_fails_without_fallback():
     with pytest.raises(ValueError, match="Unknown controller"):
         make_controller(SOArm102FollowerConfig(port="unused", controller="extended"))
+
+
+def test_backend_mismatch_has_actionable_error():
+    backend = "feetech" if hasattr(SerialMotorsBus, "_find_model") else "rustypot"
+    with pytest.raises(RuntimeError, match="[Rr]ustypot"):
+        make_controller(SOArm102FollowerConfig(port="unused", controller=backend))

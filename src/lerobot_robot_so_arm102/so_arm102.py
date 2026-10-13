@@ -6,6 +6,7 @@ from functools import cached_property
 
 from lerobot.cameras import DepthCamera, make_cameras_from_configs
 from lerobot.lerobot_types import RobotAction, RobotObservation
+from lerobot.motors import MotorCalibration
 from lerobot.robots import Robot
 from lerobot.robots.utils import ensure_safe_goal_position
 from lerobot.utils.constants import HF_LEROBOT_CALIBRATION, ROBOTS
@@ -23,6 +24,7 @@ class SOArm102Follower(Robot):
     config_class = SOArm102FollowerConfig
     name = "so_arm102_follower"
     supports_position_hold = True
+    calibration: dict[str, MotorCalibration]
 
     def __init__(self, config: SOArm102FollowerConfig, *, controller: MotorController | None = None):
         self.controller = controller if controller is not None else make_controller(config)
@@ -68,10 +70,10 @@ class SOArm102Follower(Robot):
         try:
             self.controller.connect()
             self.controller.disable_torque()
-            if calibrate and not self.is_calibrated:
-                self.calibrate()
             for camera in self.cameras.values():
                 camera.connect()
+            if calibrate and not self.is_calibrated:
+                self.calibrate()
             if calibrate:
                 self.configure()
                 self.controller.write_positions(self.controller.read_positions())
@@ -94,6 +96,11 @@ class SOArm102Follower(Robot):
         calibration = self.calibration if reuse else self.controller.calibrate()
         if set(calibration) != set(MOTOR_MODELS):
             raise ValueError("Calibration must contain all six SO-ARM 102 joints.")
+        if any(
+            calibration[joint].id != id_ or calibration[joint].range_min >= calibration[joint].range_max
+            for id_, joint in enumerate(MOTOR_MODELS, 1)
+        ):
+            raise ValueError("Calibration has incorrect motor IDs or unordered position limits.")
         calibration = {
             joint: replace(cal, drive_mode=int(joint == "gripper")) for joint, cal in calibration.items()
         }

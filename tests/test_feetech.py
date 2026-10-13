@@ -2,13 +2,15 @@
 from types import SimpleNamespace
 
 import pytest
-from lerobot.motors.feetech import FeetechMotorsBus
-from lerobot.motors.feetech.tables import MODEL_NUMBER_TABLE, MODEL_PROTOCOL
 
+from lerobot_robot_so_arm102 import SOArm102FollowerConfig
+from lerobot_robot_so_arm102.backends.sts import STSController
 from lerobot_robot_so_arm102.controller import make_motors
 
 try:
     import scservo_sdk as scs
+    from lerobot.motors.feetech import FeetechMotorsBus
+    from lerobot.motors.feetech.tables import MODEL_NUMBER_TABLE, MODEL_PROTOCOL
 
     from lerobot_robot_so_arm102.backends.feetech import SOArm102FeetechBus
 except ImportError:
@@ -142,3 +144,13 @@ def test_disconnect_releases_port_after_motor_error(bus):
     with pytest.raises(RuntimeError, match="voltage"):
         bus.disconnect()
     assert not bus.is_connected
+
+
+def test_controller_configuration_keeps_torque_off(bus, calibration):
+    bus.connect()
+    controller = STSController(bus, SOArm102FollowerConfig(port="memory"))
+    controller.configure()
+    controller.apply_calibration(calibration)
+    assert controller.is_calibrated(calibration)
+    assert all(registers[40] == 0 for registers in bus.port_handler.registers.values())
+    assert bus.port_handler.registers[1][21:24] == bytes([16, 32, 0])
