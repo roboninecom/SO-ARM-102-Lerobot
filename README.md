@@ -1,7 +1,7 @@
 # SO-ARM 102 for LeRobot
 
 Control an SO-ARM 102 follower with [LeRobot](https://github.com/huggingface/lerobot):
-set up its motors, calibrate the arm, and teleoperate it with an SO-101 leader.
+set up its motors, calibrate the arm, and teleoperate it with an SO-101 or SO-ARM 102 leader.
 The package supports the arm's mixed STS3235, STS3250, and STS3215 motors and
 handles the follower's reversed gripper direction automatically.
 
@@ -13,7 +13,7 @@ is planned.
 
 - Python 3.12, Git, and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 - An SO-ARM 102 follower with its USB controller and appropriate motor power supply.
-- An SO-101 leader if you want to teleoperate the arm.
+- An SO-101 or SO-ARM 102 leader if you want to teleoperate the arm.
 - The following motor layout, with matching firmware versions across the follower:
 
 | ID  | Joint         | Motor   |
@@ -24,6 +24,10 @@ is planned.
 | 4   | Wrist flex    | STS3235 |
 | 5   | Wrist roll    | STS3215 |
 | 6   | Gripper       | STS3215 |
+
+Both supported leader arms use STS3215 motors on all joints and use LeRobot's
+existing `so101_leader` configuration. No leader-specific changes are required;
+use `--teleop.type=so101_leader` for either model throughout this guide.
 
 The commands below are for macOS and Linux.
 
@@ -82,7 +86,7 @@ lerobot-setup-motors \
 
 After setup, reconnect the complete follower motor chain.
 
-For a new SO-101 leader that has not been set up yet:
+For a new SO-101 or SO-ARM 102 leader that has not been set up yet:
 
 ```bash
 lerobot-setup-motors \
@@ -107,7 +111,7 @@ The follower stays torque-free during calibration. Wrist roll uses the SO arm's
 full-turn range rather than measured stops; this assumes a full-turn wrist-roll
 assembly. Gripper direction is handled automatically.
 
-Calibrate the SO-101 leader separately:
+Calibrate the SO-101 or SO-ARM 102 leader separately using the same command:
 
 ```bash
 lerobot-calibrate \
