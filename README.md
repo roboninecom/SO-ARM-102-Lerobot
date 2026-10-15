@@ -37,14 +37,9 @@ in each new terminal.
 ## Connect and set up
 
 Connect the powered follower and leader controllers. Run `lerobot-find-port` for
-each arm, then set their ports (replace these examples with your own):
-
-```bash
-export FOLLOWER_PORT=/dev/ttyACM0
-export LEADER_PORT=/dev/ttyACM1
-```
-
-On macOS, ports usually start with `/dev/cu.usbmodem`.
+each arm. In the commands below, replace `/dev/ttyACM0` with your follower port and
+`/dev/ttyACM1` with your leader port. On macOS, ports usually start with
+`/dev/cu.usbmodem`.
 
 The follower expects this layout and matching firmware versions:
 
@@ -61,8 +56,8 @@ The follower expects this layout and matching firmware versions:
 appropriate command and connect only the motor requested by each prompt:
 
 ```bash
-lerobot-setup-motors --robot.type=so_arm102_follower --robot.port="$FOLLOWER_PORT"
-lerobot-setup-motors --teleop.type=so101_leader --teleop.port="$LEADER_PORT"
+lerobot-setup-motors --robot.type=so_arm102_follower --robot.port=/dev/ttyACM0
+lerobot-setup-motors --teleop.type=so101_leader --teleop.port=/dev/ttyACM1
 ```
 
 Reconnect the full motor chain after setup.
@@ -72,12 +67,12 @@ Reconnect the full motor chain after setup.
 ```bash
 lerobot-calibrate \
   --robot.type=so_arm102_follower \
-  --robot.port="$FOLLOWER_PORT" \
+  --robot.port=/dev/ttyACM0 \
   --robot.id=so102_follower
 
 lerobot-calibrate \
   --teleop.type=so101_leader \
-  --teleop.port="$LEADER_PORT" \
+  --teleop.port=/dev/ttyACM1 \
   --teleop.id=so101_leader
 ```
 
@@ -90,10 +85,10 @@ full-turn assembly. Keep the same arm IDs in later commands to reuse calibration
 ```bash
 lerobot-teleoperate \
   --robot.type=so_arm102_follower \
-  --robot.port="$FOLLOWER_PORT" \
+  --robot.port=/dev/ttyACM0 \
   --robot.id=so102_follower \
   --teleop.type=so101_leader \
-  --teleop.port="$LEADER_PORT" \
+  --teleop.port=/dev/ttyACM1 \
   --teleop.id=so101_leader
 ```
 
