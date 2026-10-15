@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-from importlib import import_module
 from typing import Protocol
 
 from lerobot.motors import Motor, MotorCalibration, MotorNormMode
 from lerobot.motors.motors_bus import SerialMotorsBus
+from lerobot.utils.import_utils import require_package
 
+from .backends.sts import STSController
 from .config_so_arm102 import SOArm102FollowerConfig
 
 MOTOR_MODELS = {
@@ -53,11 +54,23 @@ class MotorController(Protocol):
 
 def make_controller(config: SOArm102FollowerConfig) -> MotorController:
     """Load only the selected driver; optional SDKs are not needed for discovery."""
-    if config.controller not in ("feetech", "rustypot"):
-        raise ValueError(f"Unknown controller {config.controller!r}; choose 'feetech' or 'rustypot'.")
-    # The old module is only a deprecated alias after the Rustypot migration.
+    bus_class: type[SerialMotorsBus]
     if config.controller == "feetech":
         if hasattr(SerialMotorsBus, "_find_model"):
             raise RuntimeError("This LeRobot uses Rustypot; select controller='rustypot'.")
-    module = import_module(f".backends.{config.controller}", __package__)
-    return module.make_controller(config)
+        from .backends.feetech import SOArm102FeetechBus
+
+        bus_class = SOArm102FeetechBus
+    elif config.controller == "rustypot":
+        if not hasattr(SerialMotorsBus, "_find_model"):
+            raise RuntimeError(
+                "controller='rustypot' requires the Rustypot-backed LeRobot API. "
+                "See docs/rustypot.md for installation."
+            )
+        require_package("rustypot", extra="rustypot")
+        from .backends.rustypot import SOArm102RustypotBus
+
+        bus_class = SOArm102RustypotBus
+    else:
+        raise ValueError(f"Unknown controller {config.controller!r}; choose 'feetech' or 'rustypot'.")
+    return STSController(bus_class(config.port, make_motors(config.use_degrees)), config)

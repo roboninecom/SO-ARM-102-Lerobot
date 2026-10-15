@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Settings and calibration procedure adapted from LeRobot's SOFollower.
-from typing import Any
-
 from lerobot.motors import MotorCalibration
+from lerobot.motors.motors_bus import SerialMotorsBus
 
 from ..config_so_arm102 import SOArm102FollowerConfig
 
@@ -12,7 +11,7 @@ class STSController:
 
     calibration_schema = "feetech-sts-v1"
 
-    def __init__(self, bus: Any, config: SOArm102FollowerConfig):
+    def __init__(self, bus: SerialMotorsBus, config: SOArm102FollowerConfig):
         self.bus = bus
         self.config = config
 

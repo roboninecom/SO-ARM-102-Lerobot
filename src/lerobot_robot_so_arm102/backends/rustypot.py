@@ -5,11 +5,6 @@ from importlib import import_module
 from typing import TYPE_CHECKING
 
 from lerobot.motors.motors_bus import SerialMotorsBus
-from lerobot.utils.import_utils import require_package
-
-from ..config_so_arm102 import SOArm102FollowerConfig
-from ..controller import make_motors
-from .sts import STSController
 
 if TYPE_CHECKING:
     import rustypot
@@ -29,14 +24,3 @@ class SOArm102RustypotBus(SerialMotorsBus):
             _, definition = SerialMotorsBus._find_model("sts3215")
             return 2057, definition
         return SerialMotorsBus._find_model(model)
-
-
-def make_controller(config: SOArm102FollowerConfig) -> STSController:
-    """Construct the experimental controller only with a compatible LeRobot bus API."""
-    if not hasattr(SerialMotorsBus, "_find_model"):
-        raise RuntimeError(
-            "controller='rustypot' requires the Rustypot-backed LeRobot API. "
-            "Use the tested PR #4672 revision documented in this package's README."
-        )
-    require_package("rustypot", extra="rustypot")
-    return STSController(SOArm102RustypotBus(config.port, make_motors(config.use_degrees)), config)

@@ -4,7 +4,7 @@ import logging
 from dataclasses import replace
 from functools import cached_property
 
-from lerobot.cameras import DepthCamera, make_cameras_from_configs
+from lerobot.cameras import make_cameras_from_configs
 from lerobot.lerobot_types import RobotAction, RobotObservation
 from lerobot.motors import MotorCalibration
 from lerobot.robots import Robot
@@ -45,7 +45,7 @@ class SOArm102Follower(Robot):
         for name, camera in self.cameras.items():
             if getattr(camera, "use_rgb", True):
                 features[name] = (camera.height, camera.width, 3)
-            if isinstance(camera, DepthCamera) and camera.use_depth:
+            if getattr(camera, "use_depth", False):
                 features[f"{name}_depth"] = (camera.height, camera.width, 1)
         return features
 
@@ -125,7 +125,7 @@ class SOArm102Follower(Robot):
         for name, camera in self.cameras.items():
             if getattr(camera, "use_rgb", True):
                 observation[name] = camera.read_latest()
-            if isinstance(camera, DepthCamera) and camera.use_depth:
+            if getattr(camera, "use_depth", False):
                 observation[f"{name}_depth"] = camera.read_latest_depth()
         return observation
 

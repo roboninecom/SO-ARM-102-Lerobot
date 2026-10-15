@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-dependencies = ["lerobot>=0.6.2,<0.7"]
+dependencies = ["lerobot>=0.6.1,<0.7"]
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.12"]
 
 [project.urls]
@@ -18,7 +18,7 @@ Repository = "https://github.com/roboninecom/so-arm102-package"
 Issues = "https://github.com/roboninecom/so-arm102-package/issues"
 
 [project.optional-dependencies]
-feetech = ["feetech-servo-sdk>=1,<2", "pyserial>=3.5", "deepdiff>=7,<9"]
+feetech = ["lerobot[feetech]>=0.6.1,<0.7"]
 rustypot = ["rustypot>=1.11,<1.12"]
 dev = ["pytest>=8,<10", "ruff==0.14.1", "build>=1.2", "twine>=6"]
 

@@ -7,10 +7,6 @@ from lerobot.motors.feetech.feetech import FeetechMotorsBus, patch_setPacketTime
 from lerobot.motors.motors_bus import SerialMotorsBus
 from lerobot.utils.import_utils import _feetech_sdk_available, require_package
 
-from ..config_so_arm102 import SOArm102FollowerConfig
-from ..controller import make_motors
-from .sts import STSController
-
 if TYPE_CHECKING or _feetech_sdk_available:
     import scservo_sdk as scs
 
@@ -64,8 +60,3 @@ class SOArm102FeetechBus(FeetechMotorsBus):
                 super().disconnect(disable_torque)
             finally:
                 self.port_handler.closePort()
-
-
-def make_controller(config: SOArm102FollowerConfig) -> STSController:
-    """Construct the legacy controller without connecting to hardware."""
-    return STSController(SOArm102FeetechBus(config.port, make_motors(config.use_degrees)), config)

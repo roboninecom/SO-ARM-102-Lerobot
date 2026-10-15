@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+import numpy as np
 import pytest
 from lerobot.motors.motors_bus import SerialMotorsBus
 from lerobot.robots.config import RobotConfig
@@ -50,9 +51,19 @@ def test_connect_failure_closes_controller(robot, controller, calibration):
     assert "enable" not in controller.events
 
 
-def test_first_connection_with_camera_can_calibrate(robot):
+@pytest.mark.parametrize("use_rgb, use_depth", [(True, False), (True, True), (False, True)])
+def test_first_connection_with_camera_can_calibrate(robot, use_rgb, use_depth):
     class Camera:
         is_connected = False
+        height, width = 2, 3
+
+        def read_latest(self):
+            assert self.use_rgb
+            return np.zeros((self.height, self.width, 3), dtype=np.uint8)
+
+        def read_latest_depth(self):
+            assert self.use_depth
+            return np.zeros((self.height, self.width, 1), dtype=np.uint16)
 
         def connect(self):
             self.is_connected = True
@@ -61,9 +72,17 @@ def test_first_connection_with_camera_can_calibrate(robot):
             self.is_connected = False
 
     camera = Camera()
+    camera.use_rgb, camera.use_depth = use_rgb, use_depth
     robot.cameras["test"] = camera
     robot.connect()
     assert robot.is_calibrated
+    observation = robot.get_observation()
+    assert set(observation) == set(robot.observation_features)
+    assert ("test" in observation) == use_rgb
+    assert ("test_depth" in observation) == use_depth
+    for name in ("test", "test_depth"):
+        if name in observation:
+            assert observation[name].shape == robot.observation_features[name]
     robot.disconnect()
     assert not camera.is_connected
 
