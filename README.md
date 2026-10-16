@@ -103,4 +103,7 @@ backend, see [Rustypot installation](docs/rustypot.md). Custom firmware support 
 
 ## License
 
+Maintainers: see [Publishing to PyPI](docs/publishing.md) for release automation
+and one-time Trusted Publisher setup.
+
 [Apache-2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
