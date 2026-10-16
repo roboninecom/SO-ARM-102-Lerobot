@@ -101,9 +101,9 @@ using `--robot.type=so_arm102_follower` and the same port and ID.
 Standard Feetech firmware is supported by default. For the experimental Rustypot
 backend, see [Rustypot installation](docs/rustypot.md). Custom firmware support is planned.
 
-## License
-
 Maintainers: see [Publishing to PyPI](docs/publishing.md) for release automation
 and one-time Trusted Publisher setup.
+
+## License
 
 [Apache-2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
