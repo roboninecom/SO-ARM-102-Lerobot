@@ -68,7 +68,7 @@ def make_controller(config: SOArm102FollowerConfig) -> MotorController:
         if not hasattr(SerialMotorsBus, "_find_model"):
             raise RuntimeError(
                 "controller='rustypot' requires the Rustypot-backed LeRobot API. "
-                "See docs/rustypot.md for installation."
+                "Install a LeRobot version with Rustypot support."
             )
         require_package("rustypot", extra="rustypot")
         from .backends.rustypot import SOArm102RustypotBus

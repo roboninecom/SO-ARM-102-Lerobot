@@ -6,6 +6,34 @@ uploads the wheel and source distribution to PyPI using Trusted Publishing
 (OIDC), without a stored PyPI API token. Draft releases do not publish; published
 prereleases do.
 
+## Package versions and release tags
+
+The plugin version is defined by `project.version` in [`pyproject.toml`](../pyproject.toml).
+It is independent of the installed LeRobot version.
+
+| Item | Example |
+| --- | --- |
+| Plugin version | `0.1.0a1` |
+| GitHub release tag | `v0.1.0a1` |
+| Exact installation requirement | `lerobot_robot_so_arm102==0.1.0a1` |
+
+For the next alpha, update the plugin version to `0.1.0a2` and use tag `v0.1.0a2`.
+Update version-specific installation examples at the same time. Record tested
+LeRobot revisions and hardware validation results in release notes; keep untested
+configurations explicit. The workflow rejects release tags that do not match
+`v<project.version>`.
+
+Manual workflow runs publish to TestPyPI; published GitHub releases publish to
+production PyPI, including prereleases. A Git tag alone does not trigger publishing.
+Each registry tracks versions separately, so the same version can be tested on
+TestPyPI and then released to PyPI. Changed uploads to the same registry need a
+new version; existing files cannot be overwritten.
+
+The PyPI project description comes from the README bundled into each release.
+Keep README links to repository files absolute so they work on PyPI. Editing
+GitHub documentation does not update an already uploaded distribution; publish
+a new version to include those changes on PyPI.
+
 ## One-time setup
 
 1. Create a PyPI account using `hello@robonine.com`, verify the email, and enable
@@ -69,7 +97,7 @@ and production PyPI have separate publisher settings and release histories.
 3. Approve the `pypi` deployment when prompted, then verify the workflow and the
    [PyPI project](https://pypi.org/project/lerobot-robot-so-arm102/).
 
-After the first successful release, users can install in their existing LeRobot
+Users can install the published release in their existing LeRobot 0.6.1
 environment with either command (the exact version also selects the alpha):
 
 ```bash

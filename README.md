@@ -7,32 +7,27 @@ STS3235, STS3250, and STS3215 motors and automatically reverses the follower gri
 Use either an **SO-101 or SO-ARM 102 leader**. Both use STS3215 motors and LeRobot's
 standard `so101_leader` configuration.
 
-Early alpha: automated tests are available; full hardware validation is pending.
+Supports both **Feetech SDK** and **Rustypot**, automatically selecting the
+backend used by your LeRobot installation. Custom firmware support is planned
+for a future release.
 
 ## Installation
 
-Use Python 3.12 or newer. Follow the standard
+Use Python 3.12. Follow the standard
 [LeRobot installation guide](https://huggingface.co/docs/lerobot/en/installation)
-for your platform, then install LeRobot with Feetech and robot workflow support.
-For example, on macOS or Linux:
+for platform prerequisites, then install LeRobot and this plugin in the same
+environment. For example, on macOS or Linux:
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install 'lerobot[feetech,core_scripts]>=0.6.1,<0.7'
+python -m pip install 'lerobot[feetech,core_scripts]==0.6.1'
+python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a1'
 ```
 
-Install this plugin in the **same environment**:
-
-```bash
-git clone https://github.com/roboninecom/so-arm102-package.git
-cd so-arm102-package
-python -m pip install .
-```
-
-If you already have a compatible LeRobot environment with Feetech support, only
-install the plugin. It is not yet published on PyPI. Activate the same environment
-in each new terminal.
+If LeRobot 0.6.1 and its workflow dependencies are already installed, run only the
+plugin installation command. Activate the same environment in each new terminal.
+The exact plugin version selects the published alpha release.
 
 ## Connect and set up
 
@@ -82,6 +77,10 @@ full-turn assembly. Keep the same arm IDs in later commands to reuse calibration
 
 ## Teleoperate
 
+By default, both arms use degrees (`use_degrees=true`): a 30° joint movement on
+the leader requests a 30° movement on the follower. This does not scale a smaller
+leader range to the follower's full range.
+
 ```bash
 lerobot-teleoperate \
   --robot.type=so_arm102_follower \
@@ -92,20 +91,36 @@ lerobot-teleoperate \
   --teleop.id=so101_leader
 ```
 
+To map the leader's full calibrated range to the follower's full calibrated
+range, disable degrees on **both arms**:
+
+```bash
+lerobot-teleoperate \
+  --robot.type=so_arm102_follower \
+  --robot.port=/dev/ttyACM0 \
+  --robot.id=so102_follower \
+  --robot.use_degrees=false \
+  --teleop.type=so101_leader \
+  --teleop.port=/dev/ttyACM1 \
+  --teleop.id=so101_leader \
+  --teleop.use_degrees=false
+```
+
+This uses normalized joint positions from −100 to 100. A smaller leader range
+can therefore cover a larger follower range. The gripper always uses 0–100,
+independently of this setting. Existing calibration can be reused when switching
+modes, provided it captures the intended travel. Keep the same position mode when
+recording data and running a policy trained on that data.
+
 Start with small movements and check that both grippers open together.
 Press **Ctrl+C** to stop.
 
 For recording and training, follow the [LeRobot guides](https://huggingface.co/docs/lerobot/en/index),
 using `--robot.type=so_arm102_follower` and the same port and ID.
 
-The plugin automatically uses the motor backend provided by your LeRobot installation:
-the Feetech SDK in LeRobot 0.6.1, or Rustypot in current GitHub main. Both support
-standard Feetech firmware. See [installation from GitHub](docs/rustypot.md) for the
-Rustypot version. Custom firmware support is planned.
-
-Maintainers: see [Publishing to PyPI](docs/publishing.md) for release automation
-and one-time Trusted Publisher setup.
+Maintainers: see [Publishing to PyPI](https://github.com/roboninecom/so-arm102-package/blob/main/docs/publishing.md) for package versions,
+release tags, TestPyPI checks, and Trusted Publisher setup.
 
 ## License
 
-[Apache-2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
+[Apache-2.0](https://github.com/roboninecom/so-arm102-package/blob/main/LICENSE). See [NOTICE](https://github.com/roboninecom/so-arm102-package/blob/main/NOTICE) for attribution.
