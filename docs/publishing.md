@@ -1,113 +1,103 @@
-# Publishing to PyPI
+# Test and publish a release
 
-The `publish.yml` workflow checks, tests, and builds the package on pull requests
-and pushes to `main`. Publishing a GitHub Release also runs these checks and then
-uploads the wheel and source distribution to PyPI using Trusted Publishing
-(OIDC), without a stored PyPI API token. Draft releases do not publish; published
-prereleases do.
+The repository already uses Trusted Publishing. No PyPI API tokens or additional
+GitHub secrets/variables are required by the publishing workflow.
 
-## Package versions and release tags
+## Environments and variables
 
-The plugin version is defined by `project.version` in [`pyproject.toml`](../pyproject.toml).
-It is independent of the installed LeRobot version.
-
-| Item | Example |
+| Setting | Purpose |
 | --- | --- |
-| Plugin version | `0.1.0a1` |
-| GitHub release tag | `v0.1.0a1` |
-| Exact installation requirement | `lerobot_robot_so_arm102==0.1.0a1` |
+| GitHub environment `testpypi` | Staging uploads, triggered by **Run workflow** |
+| GitHub environment `pypi` | Production uploads, triggered by a published GitHub Release |
+| `RELEASE_TAG` | Set automatically from the GitHub release tag; must equal `v<project.version>` |
+| `SO102_VERSION` | Local shell variable used by the installation commands below; not a workflow input |
 
-For the next alpha, update the plugin version to `0.1.0a2` and use tag `v0.1.0a2`.
-Update version-specific installation examples at the same time. Record tested
-LeRobot revisions and hardware validation results in release notes; keep untested
-configurations explicit. The workflow rejects release tags that do not match
-`v<project.version>`.
-
-Manual workflow runs publish to TestPyPI; published GitHub releases publish to
-production PyPI, including prereleases. A Git tag alone does not trigger publishing.
-Each registry tracks versions separately, so the same version can be tested on
-TestPyPI and then released to PyPI. Changed uploads to the same registry need a
-new version; existing files cannot be overwritten.
-
-The PyPI project description comes from the README bundled into each release.
-Keep README links to repository files absolute so they work on PyPI. Editing
-GitHub documentation does not update an already uploaded distribution; publish
-a new version to include those changes on PyPI.
-
-## One-time setup
-
-1. Create a PyPI account using `hello@robonine.com`, verify the email, and enable
-   two-factor authentication. Apply for the Robonine organization with website
-   `https://robonine.com` if organization ownership is desired. Corporate
-   organizations require a paid subscription; organization registration is
-   separate from user registration and is not required for Trusted Publishing.
-2. In the repository's **Settings > Environments**, create `pypi`. Configure
-   required reviewers and restrict deployment tags to `v*`.
-3. Before the first upload, add a
-   [pending publisher](https://pypi.org/manage/account/publishing/) with:
-
-   | Field | Value |
-   | --- | --- |
-   | PyPI project name | `lerobot_robot_so_arm102` |
-   | GitHub owner | `roboninecom` |
-   | Repository | `so-arm102-package` |
-   | Workflow filename | `publish.yml` |
-   | Environment | `pypi` |
-
-   If the project already exists, configure the same publisher in that project's
-   **Manage > Publishing** page instead. The first successful pending-publisher
-   upload creates the project under the registering user's ownership; transfer
-   it to the approved organization afterwards if needed.
-
-## TestPyPI rehearsal
-
-1. Create and verify a separate account at https://test.pypi.org/ and enable
-   two-factor authentication.
-2. Create a GitHub environment named `testpypi` in this repository.
-3. Add a pending publisher at https://test.pypi.org/manage/account/publishing/
-   using the values above, with environment `testpypi` instead of `pypi`.
-   If the project already exists, use its **Manage > Publishing** page.
-4. Merge the workflow into `main`, then open **Actions > Build and publish
-   package > Run workflow**, select `main`, and run it. Approve the deployment
-   if required. The manual run builds and validates the package, then uploads
-   only to TestPyPI.
-5. Verify installation from outside the source checkout in a fresh environment:
-
-   ```bash
-   python3.12 -m venv /tmp/so102-testpypi-check
-   source /tmp/so102-testpypi-check/bin/activate
-   python -m pip install 'lerobot[feetech,core_scripts]==0.6.1'
-   python -m pip install --index-url https://test.pypi.org/simple/ --no-deps \
-     'lerobot_robot_so_arm102==0.1.0a1'
-   python -m pip check
-   lerobot-calibrate --help
-   ```
-
-Confirm that `so_arm102_follower` appears in the help output. Use a new package
-version for changed uploads; existing files cannot be overwritten. TestPyPI
-and production PyPI have separate publisher settings and release histories.
-
-## Release
-
-1. Update `project.version` in `pyproject.toml` and merge the change into `main`.
-   Each PyPI release needs a new version; uploaded files cannot be overwritten.
-2. Publish a GitHub Release from the intended commit on `main`, with a tag exactly
-   matching `v<project.version>` (currently `v0.1.0a1`). For alpha versions, mark
-   the GitHub Release as a prerelease. A mismatched tag fails before upload.
-3. Approve the `pypi` deployment when prompted, then verify the workflow and the
-   [PyPI project](https://pypi.org/project/lerobot-robot-so-arm102/).
-
-Users can install the published release in their existing LeRobot 0.6.1
-environment with either command (the exact version also selects the alpha):
+The package version comes from `project.version` in
+[`pyproject.toml`](../pyproject.toml), independently of the LeRobot version.
+Set the local variable to the version you intend to test, for example:
 
 ```bash
-python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a1'
-uv pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a1'
+export SO102_VERSION=0.1.0a2
 ```
 
-If publishing fails because the publisher is missing, finish the one-time setup
-and rerun the failed publish job. If an upload partially succeeds, inspect PyPI
-before retrying; the workflow deliberately does not silently skip existing files.
+This variable does not change the package version or select what GitHub publishes.
+If you open another terminal, set it again before running the commands below.
 
-References: [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
-and [organization accounts](https://docs.pypi.org/organization-accounts/).
+## 1. Prepare and publish to staging (TestPyPI)
+
+1. Update `project.version` to the new version, such as `0.1.0a2`. Update the README
+   installation examples and release notes, then merge the intended changes into
+   `main`. Uploaded files cannot be overwritten; changed uploads need a new version.
+2. Open **Actions > Build and publish package > Run workflow**, select `main`,
+   and run it. Note the commit SHA so production can release the same code.
+3. Approve the `testpypi` deployment if prompted. Wait for the build, validation,
+   and TestPyPI upload jobs to succeed. The production job is skipped.
+4. Check the version on [TestPyPI](https://test.pypi.org/project/lerobot-robot-so-arm102/).
+
+## 2. Test the staging installation
+
+Create a fresh environment outside the source checkout. Install dependencies from
+production PyPI, then install only the plugin from TestPyPI:
+
+```bash
+SO102_CHECK_DIR="$(mktemp -d)"
+cd "$SO102_CHECK_DIR"
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --index-url https://pypi.org/simple/ \
+  'lerobot[feetech,core_scripts]==0.6.1'
+python -m pip install --index-url https://test.pypi.org/simple/ \
+  --no-deps --no-cache-dir "lerobot_robot_so_arm102==$SO102_VERSION"
+
+python -m pip check
+python -m pip show lerobot_robot_so_arm102
+lerobot-calibrate --help
+lerobot-teleoperate --help
+```
+
+Confirm the installed version matches `SO102_VERSION` and both help commands list
+`so_arm102_follower`. These checks do not connect to hardware. Complete the hardware
+checks relevant to the release and record the tested LeRobot/backend versions.
+
+If changes are needed, use a new version and repeat staging. Once testing is done,
+leave this environment with `deactivate`.
+
+## 3. Prepare and publish production
+
+1. Use the same package version and commit that passed staging. TestPyPI and PyPI
+   have separate release histories, so the version can be the same on both.
+2. Create a GitHub Release with a tag exactly matching `v<project.version>`
+   (for example, `v0.1.0a2`), targeting the tested commit. Include the changes and
+   validation results in the release notes. Mark alpha versions as prereleases.
+3. Review the draft, then click **Publish release**. A published prerelease also
+   uploads to production PyPI; a draft release or a Git tag alone does not.
+4. Approve the `pypi` deployment if prompted, then verify the workflow and the
+   [PyPI release](https://pypi.org/project/lerobot-robot-so-arm102/).
+
+The workflow rebuilds the distributions from the release commit; it does not copy
+the uploaded TestPyPI files. The README bundled in this build becomes the PyPI
+project description. README changes require a new release to appear on PyPI.
+
+## 4. Verify the production installation
+
+Use another fresh environment, with `SO102_VERSION` still set to the released version:
+
+```bash
+SO102_CHECK_DIR="$(mktemp -d)"
+cd "$SO102_CHECK_DIR"
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --index-url https://pypi.org/simple/ --no-cache-dir \
+  'lerobot[feetech,core_scripts]==0.6.1' \
+  "lerobot_robot_so_arm102[feetech]==$SO102_VERSION"
+
+python -m pip check
+python -m pip show lerobot_robot_so_arm102
+lerobot-calibrate --help
+lerobot-teleoperate --help
+```
+
+Confirm the version and plugin discovery again. If an upload partially succeeds,
+inspect the registry before retrying; existing files cannot be overwritten.
