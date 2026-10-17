@@ -31,6 +31,34 @@ prereleases do.
    upload creates the project under the registering user's ownership; transfer
    it to the approved organization afterwards if needed.
 
+## TestPyPI rehearsal
+
+1. Create and verify a separate account at https://test.pypi.org/ and enable
+   two-factor authentication.
+2. Create a GitHub environment named `testpypi` in this repository.
+3. Add a pending publisher at https://test.pypi.org/manage/account/publishing/
+   using the values above, with environment `testpypi` instead of `pypi`.
+   If the project already exists, use its **Manage > Publishing** page.
+4. Merge the workflow into `main`, then open **Actions > Build and publish
+   package > Run workflow**, select `main`, and run it. Approve the deployment
+   if required. The manual run builds and validates the package, then uploads
+   only to TestPyPI.
+5. Verify installation from outside the source checkout in a fresh environment:
+
+   ```bash
+   python3.12 -m venv /tmp/so102-testpypi-check
+   source /tmp/so102-testpypi-check/bin/activate
+   python -m pip install 'lerobot[feetech,core_scripts]==0.6.1'
+   python -m pip install --index-url https://test.pypi.org/simple/ --no-deps \
+     'lerobot_robot_so_arm102==0.1.0a1'
+   python -m pip check
+   lerobot-calibrate --help
+   ```
+
+Confirm that `so_arm102_follower` appears in the help output. Use a new package
+version for changed uploads; existing files cannot be overwritten. TestPyPI
+and production PyPI have separate publisher settings and release histories.
+
 ## Release
 
 1. Update `project.version` in `pyproject.toml` and merge the change into `main`.

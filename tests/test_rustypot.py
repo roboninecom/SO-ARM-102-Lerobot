@@ -34,8 +34,8 @@ class MemoryBus:
         self.registers[id_][name] = value
         return 0
 
-    def sync_read_register(self, ids, name, retries=0):
-        return [self.read_register_with_error(id_, name)[0] for id_ in ids]
+    def sync_read_register_with_error(self, ids, name, retries=0):
+        return [self.read_register_with_error(id_, name) for id_ in ids]
 
     def sync_write_register(self, ids, name, values, retries=0):
         for id_, value in zip(ids, values, strict=True):
@@ -60,9 +60,8 @@ class MemoryBus:
 
 
 class SimulatedBus(SOArm102RustypotBus):
-    @staticmethod
-    def _bus_class():
-        return MemoryBus
+    def _open_bus(self):
+        return MemoryBus(self.port, self.default_baudrate, self.default_timeout / 1000, self._definitions)
 
 
 @pytest.fixture

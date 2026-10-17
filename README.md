@@ -98,8 +98,10 @@ Press **Ctrl+C** to stop.
 For recording and training, follow the [LeRobot guides](https://huggingface.co/docs/lerobot/en/index),
 using `--robot.type=so_arm102_follower` and the same port and ID.
 
-Standard Feetech firmware is supported by default. For the experimental Rustypot
-backend, see [Rustypot installation](docs/rustypot.md). Custom firmware support is planned.
+The plugin automatically uses the motor backend provided by your LeRobot installation:
+the Feetech SDK in LeRobot 0.6.1, or Rustypot in current GitHub main. Both support
+standard Feetech firmware. See [installation from GitHub](docs/rustypot.md) for the
+Rustypot version. Custom firmware support is planned.
 
 Maintainers: see [Publishing to PyPI](docs/publishing.md) for release automation
 and one-time Trusted Publisher setup.

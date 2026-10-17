@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class SOArm102RustypotBus(SerialMotorsBus):
-    """Experimental adapter for LeRobot PR #4672 at 8d3511625da3.
+    """STS3235 support for the Rustypot-backed LeRobot bus.
 
     Preserve the exact STS3235 model number while sharing the STS register layout.
     Prefer Rustypot's own definition if a later version adds this model.

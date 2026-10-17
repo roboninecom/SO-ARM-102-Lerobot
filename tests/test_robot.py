@@ -18,16 +18,22 @@ def robot(tmp_path, controller):
     robot.disconnect()
 
 
-def test_discovery(tmp_path):
+@pytest.mark.parametrize("explicit_backend", [False, True])
+def test_discovery(tmp_path, explicit_backend):
     register_third_party_plugins()
     config_class = RobotConfig.get_choice_class("so_arm102_follower")
     assert config_class is SOArm102FollowerConfig
     backend = "rustypot" if hasattr(SerialMotorsBus, "_find_model") else "feetech"
-    config = config_class(port="unused", calibration_dir=tmp_path, controller=backend)
+    config = config_class(
+        port="unused", calibration_dir=tmp_path, controller=backend if explicit_backend else "auto"
+    )
     # The installed plugin is discovered and constructed through LeRobot, without hardware IO.
     robot = make_device_from_device_class(config)
     assert isinstance(robot, SOArm102Follower)
     assert not robot.is_connected
+    assert type(robot.controller.bus).__name__ == (
+        "SOArm102RustypotBus" if backend == "rustypot" else "SOArm102FeetechBus"
+    )
 
 
 def test_calibration_connection_never_enables_torque(robot, controller):
