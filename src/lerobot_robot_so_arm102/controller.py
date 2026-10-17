@@ -54,14 +54,17 @@ class MotorController(Protocol):
 
 def make_controller(config: SOArm102FollowerConfig) -> MotorController:
     """Load only the selected driver; optional SDKs are not needed for discovery."""
+    backend = config.controller
+    if backend == "auto":
+        backend = "rustypot" if hasattr(SerialMotorsBus, "_find_model") else "feetech"
     bus_class: type[SerialMotorsBus]
-    if config.controller == "feetech":
+    if backend == "feetech":
         if hasattr(SerialMotorsBus, "_find_model"):
             raise RuntimeError("This LeRobot uses Rustypot; select controller='rustypot'.")
         from .backends.feetech import SOArm102FeetechBus
 
         bus_class = SOArm102FeetechBus
-    elif config.controller == "rustypot":
+    elif backend == "rustypot":
         if not hasattr(SerialMotorsBus, "_find_model"):
             raise RuntimeError(
                 "controller='rustypot' requires the Rustypot-backed LeRobot API. "
@@ -72,5 +75,5 @@ def make_controller(config: SOArm102FollowerConfig) -> MotorController:
 
         bus_class = SOArm102RustypotBus
     else:
-        raise ValueError(f"Unknown controller {config.controller!r}; choose 'feetech' or 'rustypot'.")
+        raise ValueError(f"Unknown controller {config.controller!r}; choose 'auto', 'feetech' or 'rustypot'.")
     return STSController(bus_class(config.port, make_motors(config.use_degrees)), config)

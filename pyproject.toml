@@ -19,7 +19,7 @@ Issues = "https://github.com/roboninecom/so-arm102-package/issues"
 
 [project.optional-dependencies]
 feetech = ["lerobot[feetech]>=0.6.1,<0.7"]
-rustypot = ["rustypot>=1.11,<1.12"]
+rustypot = ["rustypot>=1.13.1,<2"]
 dev = ["pytest>=8,<10", "ruff==0.14.1", "build>=1.2", "twine>=6"]
 
 [tool.setuptools.packages.find]

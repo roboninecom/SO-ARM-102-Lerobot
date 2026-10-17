@@ -8,10 +8,10 @@ from lerobot.robots.config import RobotConfig
 @RobotConfig.register_subclass("so_arm102_follower")
 @dataclass
 class SOArm102FollowerConfig(RobotConfig):
-    """SO-ARM 102 configuration; controller selection is explicit and never falls back."""
+    """SO-ARM 102 configuration; automatically selects the installed LeRobot motor backend."""
 
     port: str
-    controller: str = "feetech"
+    controller: str = "auto"
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
     use_degrees: bool = True
     disable_torque_on_disconnect: bool = True
