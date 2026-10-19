@@ -3,9 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from lerobot_robot_so_arm102 import SOArm102FollowerConfig
-from lerobot_robot_so_arm102.backends.sts import STSController
-from lerobot_robot_so_arm102.controller import make_motors
+from lerobot_robot_so_arm102 import SOArm102Follower, SOArm102FollowerConfig
+from lerobot_robot_so_arm102.bus import make_motors
 
 try:
     import scservo_sdk as scs
@@ -87,7 +86,7 @@ def bus():
     bus.disconnect(disable_torque=False)
 
 
-def test_mixed_models_connect_without_global_registration(bus):
+def test_sts3235_connects_without_global_registration(bus):
     tables_before = (
         MODEL_NUMBER_TABLE.copy(),
         MODEL_PROTOCOL.copy(),
@@ -146,11 +145,11 @@ def test_disconnect_releases_port_after_motor_error(bus):
     assert not bus.is_connected
 
 
-def test_controller_configuration_keeps_torque_off(bus, calibration):
+def test_upstream_configuration_and_calibration(bus, calibration, tmp_path):
     bus.connect()
-    controller = STSController(bus, SOArm102FollowerConfig(port="memory"))
-    controller.configure()
-    controller.apply_calibration(calibration)
-    assert controller.is_calibrated(calibration)
-    assert all(registers[40] == 0 for registers in bus.port_handler.registers.values())
+    robot = SOArm102Follower(SOArm102FollowerConfig(port="memory", calibration_dir=tmp_path), bus=bus)
+    robot.configure()
+    bus.write_calibration(calibration)
+    assert robot.is_calibrated
+    assert all(registers[40] == 1 for registers in bus.port_handler.registers.values())
     assert bus.port_handler.registers[1][21:24] == bytes([16, 32, 0])

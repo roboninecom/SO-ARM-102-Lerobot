@@ -1,8 +1,8 @@
 # SO-ARM 102 for LeRobot
 
 Set up, calibrate, and control an SO-ARM 102 follower with
-[LeRobot](https://github.com/huggingface/lerobot). This package supports its mixed
-STS3235, STS3250, and STS3215 motors and automatically reverses the follower gripper.
+[LeRobot](https://github.com/huggingface/lerobot). This package defines the arm's
+motor layout, adds STS3235 support, and automatically reverses the follower gripper.
 
 Use either an **SO-101 or SO-ARM 102 leader**. Both use STS3215 motors and LeRobot's
 standard `so101_leader` configuration.
@@ -74,8 +74,8 @@ lerobot-calibrate \
   --teleop.id=so101_leader
 ```
 
-Follow the prompts and move the joints through their ranges. The follower stays
-torque-free; gripper direction is handled automatically. Wrist roll assumes a
+Follow the prompts and move the joints through their ranges. Gripper direction
+is handled automatically. Wrist roll assumes a
 full-turn assembly. Keep the same arm IDs in later commands to reuse calibration.
 
 ## Teleoperate
