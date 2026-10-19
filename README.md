@@ -11,6 +11,9 @@ Supports both **Feetech SDK** and **Rustypot**, automatically selecting the
 backend used by your LeRobot installation. Custom firmware support is planned
 for a future release.
 
+[Robot hardware and assembly](https://github.com/roboninecom/SO-ARM-102) ·
+[SO-ARM 102 product page](https://robonine.com/shop/so-arm102-robotic-arm-kit/)
+
 ## Installation
 
 Use Python 3.12. Follow the standard
@@ -118,9 +121,9 @@ Press **Ctrl+C** to stop.
 For recording and training, follow the [LeRobot guides](https://huggingface.co/docs/lerobot/en/index),
 using `--robot.type=so_arm102_follower` and the same port and ID.
 
-Maintainers: see [Publishing to PyPI](https://github.com/roboninecom/so-arm102-package/blob/main/docs/publishing.md) for package versions,
+Maintainers: see [Publishing to PyPI](https://github.com/roboninecom/SO-ARM-102-Lerobot/blob/main/docs/publishing.md) for package versions,
 release tags, TestPyPI checks, and Trusted Publisher setup.
 
 ## License
 
-[Apache-2.0](https://github.com/roboninecom/so-arm102-package/blob/main/LICENSE). See [NOTICE](https://github.com/roboninecom/so-arm102-package/blob/main/NOTICE) for attribution.
+[Apache-2.0](https://github.com/roboninecom/SO-ARM-102-Lerobot/blob/main/LICENSE). See [NOTICE](https://github.com/roboninecom/SO-ARM-102-Lerobot/blob/main/NOTICE) for attribution.

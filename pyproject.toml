@@ -14,8 +14,10 @@ dependencies = ["lerobot>=0.6.1,<0.7"]
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.12"]
 
 [project.urls]
-Repository = "https://github.com/roboninecom/so-arm102-package"
-Issues = "https://github.com/roboninecom/so-arm102-package/issues"
+Homepage = "https://robonine.com/shop/so-arm102-robotic-arm-kit/"
+Documentation = "https://github.com/roboninecom/SO-ARM-102#4-set-up-the-software"
+Repository = "https://github.com/roboninecom/SO-ARM-102-Lerobot"
+Issues = "https://github.com/roboninecom/SO-ARM-102-Lerobot/issues"
 
 [project.optional-dependencies]
 feetech = ["lerobot[feetech]>=0.6.1,<0.7"]
