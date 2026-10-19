@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-from typing import Protocol
-
 from lerobot.motors import Motor, MotorCalibration, MotorNormMode
 from lerobot.motors.motors_bus import SerialMotorsBus
 from lerobot.utils.import_utils import require_package
 
-from .backends.sts import STSController
 from .config_so_arm102 import SOArm102FollowerConfig
 
 MOTOR_MODELS = {
@@ -27,33 +24,10 @@ def make_motors(use_degrees: bool) -> dict[str, Motor]:
     }
 
 
-class MotorController(Protocol):
-    """Joint-level boundary for legacy drivers and future custom firmware.
-
-    Position values use the configured body units and 0..100 gripper range.
-    Controllers apply calibration direction exactly once in both directions.
-    A different calibration representation must use a different schema name.
-    """
-
-    calibration_schema: str
-
-    @property
-    def is_connected(self) -> bool: ...
-    def connect(self) -> None: ...
-    def disconnect(self, disable_torque: bool = True) -> None: ...
-    def configure(self) -> None: ...
-    def enable_torque(self) -> None: ...
-    def disable_torque(self) -> None: ...
-    def is_calibrated(self, calibration: dict[str, MotorCalibration]) -> bool: ...
-    def apply_calibration(self, calibration: dict[str, MotorCalibration]) -> None: ...
-    def calibrate(self) -> dict[str, MotorCalibration]: ...
-    def setup_motors(self) -> None: ...
-    def read_positions(self) -> dict[str, float]: ...
-    def write_positions(self, positions: dict[str, float]) -> None: ...
-
-
-def make_controller(config: SOArm102FollowerConfig) -> MotorController:
-    """Load only the selected driver; optional SDKs are not needed for discovery."""
+def make_bus(
+    config: SOArm102FollowerConfig, calibration: dict[str, MotorCalibration] | None = None
+) -> SerialMotorsBus:
+    """Construct the installed LeRobot backend with the SO-ARM 102 motor layout."""
     backend = config.controller
     if backend == "auto":
         backend = "rustypot" if hasattr(SerialMotorsBus, "_find_model") else "feetech"
@@ -76,4 +50,4 @@ def make_controller(config: SOArm102FollowerConfig) -> MotorController:
         bus_class = SOArm102RustypotBus
     else:
         raise ValueError(f"Unknown controller {config.controller!r}; choose 'auto', 'feetech' or 'rustypot'.")
-    return STSController(bus_class(config.port, make_motors(config.use_degrees)), config)
+    return bus_class(config.port, make_motors(config.use_degrees), calibration=calibration)

@@ -2,10 +2,9 @@
 import pytest
 from lerobot.motors.motors_bus import SerialMotorsBus
 
-from lerobot_robot_so_arm102 import SOArm102FollowerConfig
+from lerobot_robot_so_arm102 import SOArm102Follower, SOArm102FollowerConfig
 from lerobot_robot_so_arm102.backends.rustypot import SOArm102RustypotBus
-from lerobot_robot_so_arm102.backends.sts import STSController
-from lerobot_robot_so_arm102.controller import make_motors
+from lerobot_robot_so_arm102.bus import make_motors
 
 pytestmark = pytest.mark.skipif(
     not hasattr(SerialMotorsBus, "_find_model"), reason="Requires the Rustypot-backed LeRobot revision"
@@ -94,14 +93,14 @@ def test_sts3235_setup(bus):
     assert bus._bus.registers[1]["baud_rate"] == 1_000_000
 
 
-def test_configuration_and_calibration(bus, calibration):
-    controller = STSController(bus, SOArm102FollowerConfig(port="memory", controller="rustypot"))
-    controller.configure()
-    assert all(registers["torque_enable"] == 0 for registers in bus._bus.registers.values())
+def test_configuration_and_calibration(bus, calibration, tmp_path):
+    robot = SOArm102Follower(SOArm102FollowerConfig(port="memory", calibration_dir=tmp_path), bus=bus)
+    robot.configure()
+    assert all(registers["torque_enable"] == 1 for registers in bus._bus.registers.values())
     assert all(registers["operating_mode"] == 0 for registers in bus._bus.registers.values())
-    controller.apply_calibration(calibration)
-    assert controller.is_calibrated(calibration)
+    bus.write_calibration(calibration)
+    assert robot.is_calibrated
     bus._bus.registers[6]["present_position"] = 100
-    assert controller.read_positions()["gripper"] == 100.0
-    controller.write_positions({"gripper": 0.0})
+    assert robot.get_observation()["gripper.pos"] == 100.0
+    robot.send_action({"gripper.pos": 0.0})
     assert bus._bus.registers[6]["goal_position"] == 4000
