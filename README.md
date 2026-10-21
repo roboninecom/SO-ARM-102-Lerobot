@@ -1,11 +1,11 @@
 # SO-ARM 102 for LeRobot
 
-Set up, calibrate, and control an SO-ARM 102 follower with
+Set up, calibrate, and control one or two SO-ARM 102 followers with
 [LeRobot](https://github.com/huggingface/lerobot). This package defines the arm's
 motor layout, adds STS3235 support, and automatically reverses the follower gripper.
 
 Use either an **SO-101 or SO-ARM 102 leader**. Both use STS3215 motors and LeRobot's
-standard `so101_leader` configuration.
+standard `so101_leader` configuration, or `bi_so_leader` for two leaders.
 
 Supports both **Feetech SDK** and **Rustypot**, automatically selecting the
 backend used by your LeRobot installation. Custom firmware support is planned
@@ -25,7 +25,7 @@ environment. For example, on macOS or Linux:
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install 'lerobot[feetech,core_scripts]==0.6.1'
-python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a1'
+python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a3'
 ```
 
 If LeRobot 0.6.1 and its workflow dependencies are already installed, run only the

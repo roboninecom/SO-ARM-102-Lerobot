@@ -17,15 +17,24 @@ The package version comes from `project.version` in
 Set the local variable to the version you intend to test, for example:
 
 ```bash
-export SO102_VERSION=0.1.0a2
+export SO102_VERSION=0.1.0a3
 ```
 
 This variable does not change the package version or select what GitHub publishes.
 If you open another terminal, set it again before running the commands below.
 
+The Trusted Publisher on each registry must match owner `roboninecom`, repository
+`SO-ARM-102-Lerobot`, workflow filename `publish.yml`, and environment `testpypi`
+or `pypi`, respectively. After a repository rename, replace the old publisher in
+both registries' project **Publishing** settings.
+
+If publishing fails with `invalid-publisher`, correct those settings and rerun
+failed jobs in GitHub Actions. A version bump is unnecessary if no files were
+uploaded; inspect the registry before retrying a partial upload.
+
 ## 1. Prepare and publish to staging (TestPyPI)
 
-1. Update `project.version` to the new version, such as `0.1.0a2`. Update the README
+1. Update `project.version` to the new version, such as `0.1.0a3`. Update the README
    installation examples and release notes, then merge the intended changes into
    `main`. Uploaded files cannot be overwritten; changed uploads need a new version.
 2. Open **Actions > Build and publish package > Run workflow**, select `main`,
@@ -56,9 +65,10 @@ lerobot-calibrate --help
 lerobot-teleoperate --help
 ```
 
-Confirm the installed version matches `SO102_VERSION` and both help commands list
-`so_arm102_follower`. These checks do not connect to hardware. Complete the hardware
-checks relevant to the release and record the tested LeRobot/backend versions.
+Confirm the installed version matches `SO102_VERSION` and each help command lists
+`so_arm102_follower` and `bi_so_arm102_follower`. These checks do not connect to
+hardware. Complete the hardware checks relevant to the release and record the
+tested LeRobot/backend versions.
 
 If changes are needed, use a new version and repeat staging. Once testing is done,
 leave this environment with `deactivate`.
@@ -68,7 +78,7 @@ leave this environment with `deactivate`.
 1. Use the same package version and commit that passed staging. TestPyPI and PyPI
    have separate release histories, so the version can be the same on both.
 2. Create a GitHub Release with a tag exactly matching `v<project.version>`
-   (for example, `v0.1.0a2`), targeting the tested commit. Include the changes and
+   (for example, `v0.1.0a3`), targeting the tested commit. Include the changes and
    validation results in the release notes. Mark alpha versions as prereleases.
 3. Review the draft, then click **Publish release**. A published prerelease also
    uploads to production PyPI; a draft release or a Git tag alone does not.
