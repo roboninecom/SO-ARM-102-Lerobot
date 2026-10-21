@@ -1,11 +1,11 @@
 # SO-ARM 102 for LeRobot
 
-Set up, calibrate, and control an SO-ARM 102 follower with
+Set up, calibrate, and control one or two SO-ARM 102 followers with
 [LeRobot](https://github.com/huggingface/lerobot). This package defines the arm's
 motor layout, adds STS3235 support, and automatically reverses the follower gripper.
 
 Use either an **SO-101 or SO-ARM 102 leader**. Both use STS3215 motors and LeRobot's
-standard `so101_leader` configuration.
+standard `so101_leader` configuration, or `bi_so_leader` for two leaders.
 
 Supports both **Feetech SDK** and **Rustypot**, automatically selecting the
 backend used by your LeRobot installation. Custom firmware support is planned
@@ -25,7 +25,7 @@ environment. For example, on macOS or Linux:
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install 'lerobot[feetech,core_scripts]==0.6.1'
-python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a1'
+python -m pip install 'lerobot_robot_so_arm102[feetech]==0.1.0a3'
 ```
 
 If LeRobot 0.6.1 and its workflow dependencies are already installed, run only the
@@ -117,6 +117,52 @@ recording data and running a policy trained on that data.
 
 Start with small movements and check that both grippers open together.
 Press **Ctrl+C** to stop.
+
+## Bimanual setup
+
+Use `bi_so_arm102_follower` for two followers and LeRobot's `bi_so_leader` for
+two SO-101 or SO-ARM 102 leaders. Replace the four example ports with your ports.
+Calibrate each pair first:
+
+```bash
+lerobot-calibrate \
+  --robot.type=bi_so_arm102_follower \
+  --robot.id=so102_pair \
+  --robot.left_arm_config.port=/dev/ttyACM0 \
+  --robot.right_arm_config.port=/dev/ttyACM1
+
+lerobot-calibrate \
+  --teleop.type=bi_so_leader \
+  --teleop.id=leader_pair \
+  --teleop.left_arm_config.port=/dev/ttyACM2 \
+  --teleop.right_arm_config.port=/dev/ttyACM3
+```
+
+Then teleoperate using normalized ranges on all four arms:
+
+```bash
+lerobot-teleoperate \
+  --robot.type=bi_so_arm102_follower \
+  --robot.id=so102_pair \
+  --robot.left_arm_config.port=/dev/ttyACM0 \
+  --robot.right_arm_config.port=/dev/ttyACM1 \
+  --robot.left_arm_config.use_degrees=false \
+  --robot.right_arm_config.use_degrees=false \
+  --teleop.type=bi_so_leader \
+  --teleop.id=leader_pair \
+  --teleop.left_arm_config.port=/dev/ttyACM2 \
+  --teleop.right_arm_config.port=/dev/ttyACM3 \
+  --teleop.left_arm_config.use_degrees=false \
+  --teleop.right_arm_config.use_degrees=false
+```
+
+Calibration IDs are derived from the pair ID: `so102_pair_left` and
+`so102_pair_right` for the followers, and `leader_pair_left` and
+`leader_pair_right` for the leaders. Keep these pair IDs for subsequent commands.
+The pair uses separate calibration files from the single-arm examples above.
+Use the same robot and teleoperator options with `lerobot-record`; use the robot
+options with `lerobot-replay`. Observations and actions use `left_` and `right_`
+joint prefixes. Set all four `use_degrees` flags to `true` for degrees mode.
 
 For recording and training, follow the [LeRobot guides](https://huggingface.co/docs/lerobot/en/index),
 using `--robot.type=so_arm102_follower` and the same port and ID.

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lerobot_robot_so_arm102"
-version = "0.1.0a2"
-description = "SO-ARM 102 follower integration for LeRobot"
+version = "0.1.0a3"
+description = "Single-arm and bimanual SO-ARM 102 follower integration for LeRobot"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
